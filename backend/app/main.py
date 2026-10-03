@@ -50,6 +50,57 @@ class ObservationORM(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class ExerciseEntryORM(Base):
+    __tablename__ = "exercise_entries"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    date = Column(String(20), nullable=False, index=True)
+    session_label = Column(String(80), nullable=False)
+    name = Column(String(120), nullable=False)
+    description = Column(String(240), default="")
+    recommended = Column(String(120), default="")
+    completed = Column(Boolean, default=False)
+    notes = Column(Text, default="")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class MedicationEntryORM(Base):
+    __tablename__ = "medication_entries"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    date = Column(String(20), nullable=False, index=True)
+    name = Column(String(120), nullable=False)
+    scheduled_for = Column(String(80), default="")
+    taken = Column(Boolean, default=False)
+    notes = Column(Text, default="")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class BloodPressureEntryORM(Base):
+    __tablename__ = "blood_pressure_entries"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    date = Column(String(20), nullable=False, index=True)
+    systolic = Column(Integer, nullable=False)
+    diastolic = Column(Integer, nullable=False)
+    notes = Column(Text, default="")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class NoteEntryORM(Base):
+    __tablename__ = "note_entries"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    title = Column(String(120), nullable=False)
+    content = Column(Text, nullable=False)
+    date = Column(String(20), nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 Base.metadata.create_all(bind=engine)
 
 
@@ -90,6 +141,37 @@ class ObservationOut(BaseModel):
     medication_taken: bool
     blood_pressure: str
     notes: str
+
+
+class ExerciseEntryCreate(BaseModel):
+    date: str
+    session_label: str
+    name: str
+    description: str = ""
+    recommended: str = ""
+    completed: bool = False
+    notes: str = ""
+
+
+class MedicationEntryCreate(BaseModel):
+    date: str
+    name: str
+    scheduled_for: str = ""
+    taken: bool = False
+    notes: str = ""
+
+
+class BloodPressureEntryCreate(BaseModel):
+    date: str
+    systolic: int
+    diastolic: int
+    notes: str = ""
+
+
+class NoteEntryCreate(BaseModel):
+    date: str
+    title: str
+    content: str
 
 
 class SummaryOut(BaseModel):
@@ -149,7 +231,41 @@ def ensure_demo_data() -> None:
                 ObservationORM(user_id=demo_user.id, date="2026-09-30", mobility="Independent", speech="Improving", exercises_done=True, medication_taken=False, blood_pressure="120/80", notes="Completed exercises without assistance and was in a steady mood."),
             ]
             db.add_all(samples)
-            db.commit()
+
+        if db.query(ExerciseEntryORM).filter(ExerciseEntryORM.user_id == demo_user.id).count() == 0:
+            exercise_samples = [
+                ExerciseEntryORM(user_id=demo_user.id, date="2026-09-30", session_label="Morning session", name="Seated marching", description="Gentle seated exercise rhythm", recommended="10 reps each side", completed=True, notes="Completed with little effort."),
+                ExerciseEntryORM(user_id=demo_user.id, date="2026-09-30", session_label="Afternoon session", name="Mobility walk", description="Short hallway walk with the walker", recommended="5 minutes", completed=True, notes="Steady pace with support."),
+                ExerciseEntryORM(user_id=demo_user.id, date="2026-09-30", session_label="Evening session", name="Stretching routine", description="Gentle stretching for arms and legs", recommended="10 minutes", completed=True, notes="Completed after dinner."),
+            ]
+            db.add_all(exercise_samples)
+
+        if db.query(MedicationEntryORM).filter(MedicationEntryORM.user_id == demo_user.id).count() == 0:
+            medication_samples = [
+                MedicationEntryORM(user_id=demo_user.id, date="2026-09-30", name="Morning tablet", scheduled_for="8:00 AM", taken=True),
+                MedicationEntryORM(user_id=demo_user.id, date="2026-09-30", name="Blood pressure check", scheduled_for="10:00 AM", taken=True),
+                MedicationEntryORM(user_id=demo_user.id, date="2026-09-30", name="Afternoon supplement", scheduled_for="1:00 PM", taken=False),
+                MedicationEntryORM(user_id=demo_user.id, date="2026-09-30", name="Evening tablet", scheduled_for="8:30 PM", taken=True),
+            ]
+            db.add_all(medication_samples)
+
+        if db.query(BloodPressureEntryORM).filter(BloodPressureEntryORM.user_id == demo_user.id).count() == 0:
+            bp_samples = [
+                BloodPressureEntryORM(user_id=demo_user.id, date="2026-09-25", systolic=124, diastolic=82, notes="Morning reading"),
+                BloodPressureEntryORM(user_id=demo_user.id, date="2026-09-27", systolic=118, diastolic=78, notes="Afternoon reading"),
+                BloodPressureEntryORM(user_id=demo_user.id, date="2026-09-30", systolic=120, diastolic=80, notes="Evening reading"),
+            ]
+            db.add_all(bp_samples)
+
+        if db.query(NoteEntryORM).filter(NoteEntryORM.user_id == demo_user.id).count() == 0:
+            note_samples = [
+                NoteEntryORM(user_id=demo_user.id, date="2026-09-30", title="Morning walk", content="Used the walker with one caregiver support and stayed steady."),
+                NoteEntryORM(user_id=demo_user.id, date="2026-09-29", title="Speech update", content="Answering questions more clearly and speaking in longer sentences."),
+                NoteEntryORM(user_id=demo_user.id, date="2026-09-28", title="Exercise reminder", content="Completed seated exercises and rested after the standing practice."),
+            ]
+            db.add_all(note_samples)
+
+        db.commit()
     finally:
         db.close()
 
@@ -237,7 +353,10 @@ def serialize_observation(entry: ObservationORM) -> ObservationOut:
 
 async def generate_ai_summary(user_name: str, entries: List[ObservationORM]) -> str:
     if not entries:
-        return f"{user_name} has no recovery entries yet. Start by logging mobility, speech, and exercise notes for the next few days."
+        return (
+            f"{user_name} has no recovery entries yet. Start by logging mobility, speech, and exercise notes for the next few days. "
+            "This is a summary of recorded information, not a medical diagnosis. Contact the healthcare professional for medical advice."
+        )
 
     latest = max(entries, key=lambda item: item.date)
     exercise_count = sum(1 for item in entries if item.exercises_done)
@@ -247,12 +366,15 @@ async def generate_ai_summary(user_name: str, entries: List[ObservationORM]) -> 
     fallback = (
         f"{user_name}'s recovery trend is {positive_trend}. Over the last {len(entries)} entries, "
         f"{exercise_count} exercise routines were completed and the latest mobility status is '{mobility_status}'. "
-        "Continue logging daily observations to track recovery carefully."
+        "Missing entries and recent note changes should be reviewed with the healthcare professional. "
+        "This is a summary of recorded information, not a medical diagnosis. Contact the healthcare professional for medical advice."
     )
 
     prompt = (
-        "You are an assistant that writes a concise, compassionate, and clinically cautious patient recovery summary. "
-        "Do not diagnose. Keep it short and actionable. Here is the patient data: "
+        "You are an assistant that writes a concise, compassionate, and clinically cautious recovery summary based only on caregiver-entered records. "
+        "Do not diagnose, do not predict outcomes, do not recommend medication changes, and do not replace a healthcare professional. "
+        "Keep it short, factual, and easy to understand. Include a clear final sentence: 'This is a summary of recorded information, not a medical diagnosis. Contact the healthcare professional for medical advice.' "
+        "Here is the patient data: "
         f"patient_name={user_name}; entries={len(entries)}; latest_mobility={mobility_status}; "
         f"exercise_sessions_completed={exercise_count}; latest_note={latest.notes or 'No note'}; "
         "Return only the summary text, no markdown."
@@ -389,6 +511,159 @@ async def get_observation(obs_id: int, user: UserORM = Depends(get_optional_user
     if not entry:
         raise HTTPException(status_code=404, detail="Not found")
     return serialize_observation(entry).model_dump()
+
+
+@app.get("/exercise-entries")
+async def list_exercise_entries(user: UserORM = Depends(get_optional_user), db: Session = Depends(get_db)):
+    entries = db.query(ExerciseEntryORM).filter(ExerciseEntryORM.user_id == user.id).order_by(ExerciseEntryORM.date.asc()).all()
+    return [
+        {
+            "id": item.id,
+            "date": item.date,
+            "session_label": item.session_label,
+            "name": item.name,
+            "description": item.description,
+            "recommended": item.recommended,
+            "completed": item.completed,
+            "notes": item.notes,
+        }
+        for item in entries
+    ]
+
+
+@app.post("/exercise-entries")
+async def add_exercise_entry(payload: ExerciseEntryCreate, user: UserORM = Depends(get_optional_user), db: Session = Depends(get_db)):
+    entry = ExerciseEntryORM(
+        user_id=user.id,
+        date=payload.date,
+        session_label=payload.session_label,
+        name=payload.name,
+        description=payload.description,
+        recommended=payload.recommended,
+        completed=payload.completed,
+        notes=payload.notes,
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return {"id": entry.id, "message": "exercise entry saved", "entry": {
+        "id": entry.id,
+        "date": entry.date,
+        "session_label": entry.session_label,
+        "name": entry.name,
+        "description": entry.description,
+        "recommended": entry.recommended,
+        "completed": entry.completed,
+        "notes": entry.notes,
+    }}
+
+
+@app.get("/medication-entries")
+async def list_medication_entries(user: UserORM = Depends(get_optional_user), db: Session = Depends(get_db)):
+    entries = db.query(MedicationEntryORM).filter(MedicationEntryORM.user_id == user.id).order_by(MedicationEntryORM.date.asc()).all()
+    return [
+        {
+            "id": item.id,
+            "date": item.date,
+            "name": item.name,
+            "scheduled_for": item.scheduled_for,
+            "taken": item.taken,
+            "notes": item.notes,
+        }
+        for item in entries
+    ]
+
+
+@app.post("/medication-entries")
+async def add_medication_entry(payload: MedicationEntryCreate, user: UserORM = Depends(get_optional_user), db: Session = Depends(get_db)):
+    entry = MedicationEntryORM(
+        user_id=user.id,
+        date=payload.date,
+        name=payload.name,
+        scheduled_for=payload.scheduled_for,
+        taken=payload.taken,
+        notes=payload.notes,
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return {"id": entry.id, "message": "medication entry saved", "entry": {
+        "id": entry.id,
+        "date": entry.date,
+        "name": entry.name,
+        "scheduled_for": entry.scheduled_for,
+        "taken": entry.taken,
+        "notes": entry.notes,
+    }}
+
+
+@app.get("/blood-pressure-entries")
+async def list_blood_pressure_entries(user: UserORM = Depends(get_optional_user), db: Session = Depends(get_db)):
+    entries = db.query(BloodPressureEntryORM).filter(BloodPressureEntryORM.user_id == user.id).order_by(BloodPressureEntryORM.date.asc()).all()
+    return [
+        {
+            "id": item.id,
+            "date": item.date,
+            "systolic": item.systolic,
+            "diastolic": item.diastolic,
+            "notes": item.notes,
+        }
+        for item in entries
+    ]
+
+
+@app.post("/blood-pressure-entries")
+async def add_blood_pressure_entry(payload: BloodPressureEntryCreate, user: UserORM = Depends(get_optional_user), db: Session = Depends(get_db)):
+    entry = BloodPressureEntryORM(
+        user_id=user.id,
+        date=payload.date,
+        systolic=payload.systolic,
+        diastolic=payload.diastolic,
+        notes=payload.notes,
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return {"id": entry.id, "message": "blood pressure entry saved", "entry": {
+        "id": entry.id,
+        "date": entry.date,
+        "systolic": entry.systolic,
+        "diastolic": entry.diastolic,
+        "notes": entry.notes,
+    }}
+
+
+@app.get("/notes-entries")
+async def list_note_entries(user: UserORM = Depends(get_optional_user), db: Session = Depends(get_db)):
+    entries = db.query(NoteEntryORM).filter(NoteEntryORM.user_id == user.id).order_by(NoteEntryORM.date.asc()).all()
+    return [
+        {
+            "id": item.id,
+            "date": item.date,
+            "title": item.title,
+            "content": item.content,
+        }
+        for item in entries
+    ]
+
+
+@app.post("/notes-entries")
+async def add_note_entry(payload: NoteEntryCreate, user: UserORM = Depends(get_optional_user), db: Session = Depends(get_db)):
+    entry = NoteEntryORM(
+        user_id=user.id,
+        date=payload.date,
+        title=payload.title,
+        content=payload.content,
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return {"id": entry.id, "message": "note entry saved", "entry": {
+        "id": entry.id,
+        "date": entry.date,
+        "title": entry.title,
+        "content": entry.content,
+    }}
 
 
 @app.on_event("startup")

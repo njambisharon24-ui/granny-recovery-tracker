@@ -25,13 +25,17 @@ This project is intended for caregiver support and education only. It is not a s
 
 ## Features
 
-- daily observation logging for mobility, speech, blood pressure, exercise completion, medication, and notes
-- dashboard summary cards for quick recovery overview
-- patient detail view and observation timeline
-- AI-assisted summary with graceful fallback logic if Ollama is unavailable
+- responsive caregiver dashboard with warm, high-contrast accessibility-first design
+- daily check-in flow for walking, hand and leg movement, speech, alertness, swallowing, mood, blood pressure, and notes
+- exercise tracker for morning, afternoon, and evening sessions with completion tracking
+- medication and blood-pressure tracking views for daily routines
+- recovery progress dashboard with historical charts and a notes timeline
+- AI recovery summary using Ollama or another open-weight model, with a clear non-diagnostic statement
+- emergency guidance screen explaining sudden warning signs after a stroke
+- privacy and security overview covering authentication, access control, secure sessions, audit logging, and data export/deletion
 - caregiver login and secure password hashing
 - local SQLite storage for quick MVP development and testing
-- responsive dashboard UI for desktop and tablet use
+- responsive UI for desktop, tablet, and mobile screens
 
 ## Tech stack
 

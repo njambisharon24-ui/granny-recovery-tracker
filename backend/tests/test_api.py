@@ -51,3 +51,37 @@ def test_demo_login_and_summary():
     summary = summary_response.json()
     assert 'risk_level' in summary
     assert 'total_entries' in summary
+
+
+def test_tracking_entries_are_available():
+    exercise_response = client.get('/exercise-entries')
+    assert exercise_response.status_code == 200
+    assert isinstance(exercise_response.json(), list)
+
+    medication_response = client.get('/medication-entries')
+    assert medication_response.status_code == 200
+    assert isinstance(medication_response.json(), list)
+
+    blood_pressure_response = client.get('/blood-pressure-entries')
+    assert blood_pressure_response.status_code == 200
+    assert isinstance(blood_pressure_response.json(), list)
+
+    notes_response = client.get('/notes-entries')
+    assert notes_response.status_code == 200
+    assert isinstance(notes_response.json(), list)
+
+
+def test_create_medication_and_note_entries():
+    medication_response = client.post(
+        '/medication-entries',
+        json={'date': '2026-10-03', 'name': 'Evening medication', 'scheduled_for': '8:30 PM', 'taken': True, 'notes': 'Recorded after dinner.'},
+    )
+    assert medication_response.status_code == 200
+    assert medication_response.json()['entry']['name'] == 'Evening medication'
+
+    note_response = client.post(
+        '/notes-entries',
+        json={'date': '2026-10-03', 'title': 'Appetite improved', 'content': 'Had a better appetite during supper.'},
+    )
+    assert note_response.status_code == 200
+    assert note_response.json()['entry']['title'] == 'Appetite improved'
